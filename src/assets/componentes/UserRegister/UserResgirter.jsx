@@ -264,32 +264,76 @@ function UserRegister() {
         }
     };
 
-    // Simple form validation
+  
     const validateForm = (data) => {
         let errors = {};
         let isValid = true;
-
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+        // Validación de cédula colombiana
+        const cedulaRegex = /^[0-9]{8,10}$/;
+        if (data.identificacion && !cedulaRegex.test(data.identificacion)) {
+            errors.identificacion = "La cédula debe contener entre 8 y 10 dígitos numéricos";
+            isValid = false;
+        }
+    
+        // Validación de email
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (data.correo && !emailRegex.test(data.correo)) {
             errors.correo = "Formato de correo inválido";
             isValid = false;
         }
-
-        // Phone validation (simple check for numeric values)
-        if (data.telefono && !/^\d+$/.test(data.telefono)) {
-            errors.telefono = "El teléfono debe contener solo números";
+    
+        // Validación de teléfono
+        const telefonoRegex = /^[0-9]{7,10}$/;
+        if (data.telefono && !telefonoRegex.test(data.telefono)) {
+            errors.telefono = "El teléfono debe contener entre 7 y 10 dígitos";
             isValid = false;
         }
-
-        // Emergency contact validation
-        if (data.contactoEmergencia && !/^\d+$/.test(data.contactoEmergencia)) {
-            errors.contactoEmergencia = "El contacto debe contener solo números";
+    
+        // Validación de contacto de emergencia
+        if (data.contactoEmergencia && !telefonoRegex.test(data.contactoEmergencia)) {
+            errors.contactoEmergencia = "El contacto debe contener entre 7 y 10 dígitos";
             isValid = false;
         }
-
+    
+        // Validación de nombres
+        const nombreRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/;
+        if (data.nombreApicultor && !nombreRegex.test(data.nombreApicultor)) {
+            errors.nombreApicultor = "El nombre solo debe contener letras y espacios";
+            isValid = false;
+        }
+    
+        if (data.apellidoApicultor && !nombreRegex.test(data.apellidoApicultor)) {
+            errors.apellidoApicultor = "El apellido solo debe contener letras y espacios";
+            isValid = false;
+        }
+    
+        if (data.nombreContactoEmergencia && !nombreRegex.test(data.nombreContactoEmergencia)) {
+            errors.nombreContactoEmergencia = "El nombre solo debe contener letras y espacios";
+            isValid = false;
+        }
+    
+        // Validación de contraseña
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        if (data.password && !passwordRegex.test(data.password)) {
+            errors.password = "La contraseña debe tener al menos 8 caracteres, incluyendo letras y números";
+            isValid = false;
+        }
+    
+        // Validación de username
+        const usernameRegex = /^[a-zA-Z0-9._-]{3,20}$/;
+        if (data.username && !usernameRegex.test(data.username)) {
+            errors.username = "El username debe tener entre 3 y 20 caracteres y solo puede contener letras, números, puntos, guiones y guiones bajos";
+            isValid = false;
+        }
+    
         return { isValid, errors };
     };
+
+
+
+
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -394,6 +438,7 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.nombreApicultor && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.nombreApicultor}</div>}
 
                                 <Label htmlFor="apellidoApicultor">Apellido del apicultor</Label>
                                 <Input
@@ -405,7 +450,7 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
-
+                                {errors.apellidoApicultor && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.apellidoApicultor}</div>}
                                 <Label htmlFor="identificacion">Identificación</Label>
                                 <Input
                                     type='number'
@@ -416,7 +461,7 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
-
+                                {errors.identificacion && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.identificacion}</div>}
                                 <Label htmlFor="password">Contraseña</Label>
                                 <PasswordInputWrapper>
                                     <Input
@@ -466,6 +511,7 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.fechaNacimiento && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.fechaNacimiento}</div>}
 
                                 <Label htmlFor="estado">Estado</Label>
                                 <Select
@@ -489,7 +535,7 @@ function UserRegister() {
                                     value={formDataRegister.nombreContactoEmergencia}
                                     onChange={handleChange}
                                 />
-
+                                {errors.nombreContactoEmergencia && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.nombreContactoEmergencia}</div>}
                                 <Label htmlFor="contactoEmergencia">Contacto de emergencia</Label>
                                 <Input
                                     type='tel'

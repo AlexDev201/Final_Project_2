@@ -6,8 +6,6 @@ import { useEffect, useState } from 'react';
 import Admin_Nav_Bar from '../Single_Components/Admin_Nav_Bar';
 import Footer from '../Single_Components/Footer';
 import Aside_Card from '../Single_Components/Aside';
-// Importamos Bootstrap (asegúrate de tenerlo instalado)
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -132,64 +130,63 @@ function ViewApicultor() {
       {/* Header/Navbar */}
       <Admin_Nav_Bar />
 
-      {/* Main Content */}
-      <div className="container-fluid flex-grow-1 py-3">
-        <div className="row">
-          {/* Main Content Area */}
-          <div className="col-12 col-lg-6 mb-4" style={{ marginLeft: '12rem' }}>
-            <div className="d-flex flex-column gap-3">
-              {apicultores.length > 0 ? (
-                apicultores.map((apicultor) => (
-                  <div 
-                    key={apicultor.id} 
-                    className="card shadow-lg border rounded p-3 ms-5"
-                  >
-                    <div className="row g-0 align-items-center ms-6">
-                      <div className="col-12 col-md-4 mb-3 mb-md-0">
-                        <img 
-                          src={imagen1} 
-                          alt={`Imagen de ${apicultor.first_name} ${apicultor.last_name}`} 
-                          className="img-fluid rounded-circle" 
-                          style={{ 
-                            height: '150px', 
-                            width: '150px', 
-                            objectFit: 'cover',
-                            border: '3px solid gray'
-                          }} 
-                        />
-                      </div>
-                      <div className="col-12 col-md-5 text-center text-md-start mb-3 mb-md-0">
-                        <h3 className="mb-1 ms-5">{apicultor.first_name} {apicultor.last_name}</h3>
-                        <p className="mb-0 ms-5">{apicultor.state === 'Active' ? 'Activo' : 'Inactivo'}</p>
-                      </div>
-                      <div className="col-12 col-md-3 text-center text-md-end">
-                        <select 
-                          className="form-select form-select-sm bg-warning-subtle border-warning-subtle"
-                          onChange={(e) => handleSelectChange(e, apicultor.id)}
-                        >
-                          <option value="">Seleccionar</option>
-                          <option value="editar">Editar</option>
-                          <option value="ver-detalles">Ver detalles</option>
-                        </select>
+             {/* Main Content */}
+          <div className="container-fluid flex-grow-1 py-3">
+            <div className="row">
+              {/* Main Content Area - ajustado para ser consistente con Dashboard */}
+              <div className="col-12 col-lg-8 col-xl-7 mb-4 mx-auto">
+                <div className="d-flex flex-column gap-3">
+                  {apicultores.length > 0 ? (
+                    apicultores.map((apicultor) => (
+                      <div 
+                      key={apicultor.id} 
+                      className="card shadow-lg border rounded p-3 mx-2 mx-md-3"
+                    >
+                      <div className="row g-0 align-items-center">
+                        <div className="col-12 col-sm-4 mb-3 mb-sm-0 text-center">
+                          <img 
+                            src={imagen1} 
+                            alt={`Imagen de ${apicultor.first_name} ${apicultor.last_name}`} 
+                            className="img-fluid rounded-circle" 
+                            style={{ 
+                              height: '150px', 
+                              width: '150px', 
+                              objectFit: 'cover',
+                              border: '3px solid gray'
+                            }} 
+                          />
+                        </div>
+                        <div className="col-12 col-sm-5 text-center text-sm-start mb-3 mb-sm-0">
+                          <h3 className="mb-1 ms-0 ms-sm-3">{apicultor.first_name} {apicultor.last_name}</h3>
+                          <p className="mb-0 ms-0 ms-sm-3">{apicultor.state === 'Active' ? 'Activo' : 'Inactivo'}</p>
+                        </div>
+                        <div className="col-12 col-sm-3 text-center">
+                          <select 
+                            className="form-select form-select-sm bg-warning-subtle border-warning-subtle"
+                            onChange={(e) => handleSelectChange(e, apicultor.id)}
+                          >
+                            <option value="">Seleccionar</option>
+                            <option value="editar">Editar</option>
+                            <option value="ver-detalles">Ver detalles</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="alert alert-warning mx-2 mx-md-3" role="alert">
+                    No hay apicultores registrados
                   </div>
-                ))
-              ) : (
-                <div className="alert alert-warning ms-5" role="alert">
-                  No hay apicultores registrados
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Sidebar/Aside */}
-          <div className="col-12 col-lg-3">
-            <Aside_Card />
-          </div>
+          )}
         </div>
       </div>
 
+      {/* Sidebar/Aside - mismo tamaño que en Dashboard */}
+      <div className="col-12 col-lg-4 col-xl-3">
+        <Aside_Card />
+      </div>
+  </div>
+  </div>
       {/* Footer */}
       <Footer />
 

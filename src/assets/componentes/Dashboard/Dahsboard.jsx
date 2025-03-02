@@ -1,97 +1,53 @@
 import { useNavigate } from 'react-router-dom';
-import imagen1 from 'src/img/abejitas.jpeg';
-import imagen2 from 'src/img/imagen_ejemplo.jpg';
-import imagen3 from 'src/img/images.jpeg';
 import { useEffect, useState } from 'react';
 import NavBar from '../Single_Components/NavBar';
 import Footer from '../Single_Components/Footer';
 import Aside_Card from '../Single_Components/Aside';
-// Importamos Bootstrap (asegúrate de tenerlo instalado)
-// npm install bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
+// Imágenes placeholders (puedes mantenerlas o ajustarlas dinámicamente si agregas un campo de imagen al modelo)
+import imagen1 from 'src/img/abejitas.jpeg';
+import imagen2 from 'src/img/imagen_ejemplo.jpg';
+import imagen3 from 'src/img/images.jpeg';
+
 function Dashboard() {
-  // Estado para almacenar los datos obtenidos
-  const [data, setData] = useState(null);
-  // Estado para manejar posibles errores
+  const [data, setData] = useState(null); // Datos de las colmenas desde la API
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  //Estado para la seleccion de Id en las colmenas
   const [selectedColmenaId, setSelectedColmenaId] = useState(null);
-  //Estado para la apertura del PopUp con la informacion del apicultor
   const [showPopup, setShowPopup] = useState(false);
 
-  const colmenasIniciales = [
-    { id: 12345, finca: "Finca La Margarita", imagen: imagen1 },
-    { id: 25485, finca: "Finca Los Alpes", imagen: imagen2 },
-    { id: 98712, finca: "Finca La Graciela", imagen: imagen3 },
-    { id: 22334, finca: "Finca La Margarita", imagen: imagen1 },
-    { id: 22663, finca: "Finca Los Alpes", imagen: imagen2 },
-    { id: 11223, finca: "Finca La Graciela", imagen: imagen3 },
-  ];
+  // Imágenes cíclicas para asignar a las colmenas (si no hay campo de imagen en el modelo)
+  const imagenes = [imagen1, imagen2, imagen3];
 
-  const colmenasCompletas= [
-    {
-      cod: 12345,
-      cantidadCriasAbierta : 24,
-      cantidadCriasOperculada : 54,
-      presenciaReina : 'Si',
-      colorReina : 'Amarilla',
-      origenReina: 'Europea',
-      reportesGenerales: 'Sin novedad' 
-    },
-    {
-      cod: 25485,
-      cantidadCriasAbierta : 34,
-      cantidadCriasOperculada : 45,
-      presenciaReina : 'Si',
-      colorReina : 'Amarilla',
-      origenReina: 'Africanita',
-      reportesGenerales: 'Sin novedad' 
-    },
-    {
-      cod: 98712,
-      cantidadCriasAbierta: 25,
-      cantidadCriasOperculada: 43,
-      presenciaReina: 'Si',
-      colorReina: 'Negra',
-      origenReina : 'Europea',
-      reportesGenerales: 'Sin novedad'
-    },
-    {
-      cod: 22334,
-      cantidadCriasAbierta : 24,
-      cantidadCriasOperculada : 54,
-      presenciaReina : 'Si',
-      colorReina : 'Amarilla',
-      origenReina: 'Europea',
-      reportesGenerales: 'Sin novedad' 
-    },
-    {
-      cod: 22663,
-      cantidadCriasAbierta : 34,
-      cantidadCriasOperculada : 45,
-      presenciaReina : 'Si',
-      colorReina : 'Amarilla',
-      origenReina: 'Africanita',
-      reportesGenerales: 'Sin novedad' 
-    },
-    {
-      cod: 11223,
-      cantidadCriasAbierta: 25,
-      cantidadCriasOperculada: 43,
-      presenciaReina: 'Si',
-      colorReina: 'Negra',
-      origenReina : 'Europea',
-      reportesGenerales: 'Sin novedad'
-    } 
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/beehive/list-hives/', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Asegúrate de incluir el token si la API lo requiere
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Error en la respuesta del servidor');
+        }
+        const result = await response.json();
+        setData(result);
+      } catch (error) {
+        setError(error.message);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleSelectChange = (e, colmenaId) => {
-    switch(e.target.value) {
+    switch (e.target.value) {
       case 'editar':
-        navigate('/EditColmena');
+        case 'editar':
+        navigate(`/EditColmena/${colmenaId}`); 
+    break;
         break;
       case 'monitoreo':
         navigate('/Monitoreo');
@@ -106,95 +62,84 @@ function Dashboard() {
           setShowPopup(true);
         }, 10);
         break;
+      default:
+        break;
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:8000/beehive/list-hives/');
-        if (!response.ok) {
-          throw new Error('Error en la respuesta del servidor');
-        }
-        const result = await response.json();
-        setData(result);
-      } catch (error) {
-        setError(error);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const closePopup = () => {
     setShowPopup(false);
     setTimeout(() => {
       setSelectedColmenaId(null);
-    }, 400)
-  }
+    }, 400);
+  };
 
+  // Renderizado
   return (
     <div className="d-flex flex-column min-vh-100">
-      {/* Header/Navbar */}
       <NavBar />
 
-      {/* Main Content */}
       <div className="container-fluid flex-grow-1 py-3">
         <div className="row">
-          {/* Main Content Area */}
-          <div className="col-12 col-lg-6 mb-4" style={{ marginLeft: '15rem' }}>
+          <div className="col-12 col-lg-8 col-xl-7 mb-4 mx-auto">
             <div className="d-flex flex-column gap-3">
-              {colmenasIniciales.map((colmena) => (
-                <div 
-                  key={colmena.id} 
-                  className="card shadow-lg border rounded p-3 ms-5"
-                >
-                  <div className="row g-0 align-items-center">
-                    <div className="col-12 col-md-4 mb-3 mb-md-0">
-                      <img 
-                        src={colmena.imagen} 
-                        alt="Imagen de la colmena" 
-                        className="img-fluid rounded" 
-                        style={{ 
-                          height: '200px', 
-                          width: '100%', 
-                          objectFit: 'cover' 
-                        }} 
-                      />
-                    </div>
-                    <div className="col-12 col-md-5 text-center text-md-start mb-3 mb-md-0">
-                      <h3 className="mb-1 ms-5">Cod {colmena.id}</h3>
-                      {colmena.finca && <p className="mb-0 ms-5" >{colmena.finca}</p>}
-                    </div>
-                    <div className="col-12 col-md-3 text-center text-md-end">
-                      <select 
-                        className="form-select form-select-sm bg-warning-subtle border-warning-subtle"
-                        onChange={(e) => handleSelectChange(e, colmena.id)}
-                      >
-                        <option value="">Seleccionar</option>
-                        <option value='editar'>Editar</option>
-                        <option value='recoleccion'>Recolección</option>
-                        <option value='monitoreo'>Monitoreo</option>
-                        <option value="visualizar-detalles">Visualizar Detalles</option>
-                      </select>
+              {error ? (
+                <p className="text-danger text-center">Error: {error}</p>
+              ) : !data ? (
+                <p className="text-center">Cargando colmenas...</p>
+              ) : data.length === 0 ? (
+                <p className="text-center">No hay colmenas registradas.</p>
+              ) : (
+                data.map((colmena, index) => (
+                  <div 
+                    key={colmena.id} 
+                    className="card shadow-lg border rounded p-3 mx-2 mx-md-3"
+                  >
+                    <div className="row g-0 align-items-center">
+                      <div className="col-12 col-sm-4 mb-3 mb-sm-0">
+                        <img 
+                          src={imagenes[index % imagenes.length]} // Asigna una imagen cíclica
+                          alt="Imagen de la colmena" 
+                          className="img-fluid rounded" 
+                          style={{ 
+                            maxHeight: '200px', 
+                            width: '100%', 
+                            objectFit: 'cover' 
+                          }} 
+                        />
+                      </div>
+                      <div className="col-12 col-sm-5 text-center text-sm-start mb-3 mb-sm-0">
+                        <h3 className="mb-1 ms-0 ms-sm-3">Cod {colmena.id}</h3>
+                        <p className="mb-0 ms-0 ms-sm-3">{colmena.location}</p> {/* Usamos location como "finca" */}
+                      </div>
+                      <div className="col-12 col-sm-3 text-center">
+                        <select 
+                          className="form-select form-select-sm bg-warning-subtle border-warning-subtle"
+                          onChange={(e) => handleSelectChange(e, colmena.id)}
+                        >
+                          <option value="">Seleccionar</option>
+                          <option value="editar">Editar</option>
+                          <option value="recoleccion">Recolección</option>
+                          <option value="monitoreo">Monitoreo</option>
+                          <option value="visualizar-detalles">Visualizar Detalles</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
-          {/* Sidebar/Aside */}
-          <div className="col-12 col-lg-3">
+          <div className="col-12 col-lg-4 col-xl-3">
             <Aside_Card />
           </div>
         </div>
       </div>
 
-      {/* Footer */}
       <Footer />
 
-      {/* Modal/Popup using Bootstrap */}
+      {/* Popup */}
       <div 
         className={`modal fade ${showPopup ? 'show' : ''}`} 
         id="colmenaModal" 
@@ -223,9 +168,9 @@ function Dashboard() {
               ></button>
             </div>
             <div className="modal-body">
-              {selectedColmenaId && (
+              {selectedColmenaId && data && (
                 (() => {
-                  const selectedColmena = colmenasCompletas.find(c => c.cod === selectedColmenaId);
+                  const selectedColmena = data.find(c => c.id === selectedColmenaId);
                   if (selectedColmena) {
                     return (
                       <>
@@ -233,7 +178,7 @@ function Dashboard() {
                         <div className="row">
                           <div className="col-12 col-md-5 text-center mb-4 mb-md-0">
                             <img 
-                              src={imagen1} 
+                              src={imagen1} // Usa una imagen placeholder o ajusta si tienes un campo de imagen
                               alt="Imagen de colmena"
                               className="rounded-circle border border-3 border-secondary"
                               style={{
@@ -248,12 +193,12 @@ function Dashboard() {
                             </div>
                           </div>
                           <div className="col-12 col-md-7">
-                            <p><strong>Cantidad cuadros cria abierta:</strong> {selectedColmena.cantidadCriasAbierta}</p>
-                            <p><strong>Cantidad de cuadros de cria operculada:</strong> {selectedColmena.cantidadCriasOperculada}</p>
-                            <p><strong>Presencia reina:</strong> {selectedColmena.presenciaReina || 'No especificado'}</p>
-                            <p><strong>ColorReina:</strong> {selectedColmena.colorReina}</p>
-                            <p><strong>Origen Reina:</strong> {selectedColmena.origenReina}</p>
-                            <p><strong>Reportes generales:</strong> {selectedColmena.reportesGenerales}</p>
+                            <p><strong>Cantidad cuadros cría abierta:</strong> {selectedColmena.open_brood_frames}</p>
+                            <p><strong>Cantidad cuadros cría operculada:</strong> {selectedColmena.capped_brood_frames}</p>
+                            <p><strong>Presencia reina:</strong> {selectedColmena.queen_presence ? 'Sí' : 'No'}</p>
+                            <p><strong>Color reina:</strong> {selectedColmena.queen_color}</p>
+                            <p><strong>Origen reina:</strong> {selectedColmena.origin}</p>
+                            <p><strong>Reportes generales:</strong> {selectedColmena.observations}</p>
                           </div>
                         </div>
                       </>
@@ -267,7 +212,6 @@ function Dashboard() {
           </div>
         </div>
       </div>
-      {/* Backdrop for modal */}
       {showPopup && <div className="modal-backdrop fade show"></div>}
     </div>
   );

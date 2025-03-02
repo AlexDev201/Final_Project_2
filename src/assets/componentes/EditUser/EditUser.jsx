@@ -367,6 +367,7 @@ function EditUser() {
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.nombreApicultor && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.nombreApicultor}</div>}
 
                                 <Label htmlFor="apellidoApicultor">Apellido del apicultor</Label>
                                 <Input
@@ -378,6 +379,8 @@ function EditUser() {
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.apellidoApicultor && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.apellidoApicultor}</div>}
+
 
                                 <Label htmlFor="identificacion">Identificación</Label>
                                 <Input
@@ -389,6 +392,8 @@ function EditUser() {
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.identificacion && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.identificacion}</div>}
+
 
                                 <Label htmlFor="correo">Correo</Label>
                                 <Input
@@ -434,6 +439,7 @@ function EditUser() {
                                     value={formDataUser.nombreContactoEmergencia}
                                     onChange={handleChange}
                                 />
+                                {errors.nombreContactoEmergencia && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.nombreContactoEmergenciacontactoEmergencia}</div>}
 
                                 <Label htmlFor="contactoEmergencia">Contacto de emergencia</Label>
                                 <Input

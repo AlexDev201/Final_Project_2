@@ -376,7 +376,6 @@ function HivenRegister() {
 const validateForm = (formData) => {
     let errors = {};
     let isValid = true;
-  
     // Validación para cantidadCriasAbierta (formato y rango)
     if (formData.cantidadCriasAbierta && !/^\d+(\.\d{1,2})?$/.test(formData.cantidadCriasAbierta)) {
       errors.cantidadCriasAbierta = "Ingrese un número válido (hasta 2 decimales)";
@@ -444,77 +443,82 @@ const validateForm = (formData) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-         // Aplicar la validación del formulario
-    const validation = validateForm(formData);
+        const token = localStorage.getItem('token');
     
-    if (!validation.isValid) {
-        // Actualizar los errores en el estado
-        setErrors(validation.errors);
-        return; // Detener el envío si hay errores
-    }
-        
+        // Aplicar la validación del formulario
+        const validation = validateForm(formData);
+        if (!validation.isValid) {
+            setErrors(validation.errors);
+            return; // Detener el envío si hay errores
+        }
+    
         try {
-            // Estructura los datos según el formato esperado por el serializador
-            const apiData = {
-
-                 // Datos de ubicación
-                 location: `${parseFloat(formData.latitud)},${parseFloat(formData.longitud)}`,
-                
-                // Campos del formulario
-                open_brood_frames: parseFloat(formData.cantidadCriasAbierta),
-                capped_brood_frames: parseFloat(formData.cantidadCriasOperculada),
-                queen_presence: formData.presenciaReina === 'Si' ? true : false,
-                origin: formData.origenReina,
-                queen_color: formData.colorReina,
-                food_frames: formData.cuadrosComida, 
-                observations: formData.reportesGenerales,
-                // Datos del clima
-                id_weather_conditions: {
-                    temperature: formData.temperatura_c,
-                    wind_speed: formData.viento_kph,
-                    pressure: formData.presion_mb,
-                    humidity: formData.humedad,
-                    weather_description: formData.clima_texto
-                },
-                // Campos que podrían requerir valores por defecto
-                status: formData.estado,
-                id_User: localStorage.getItem('id_User')
+                    // Estructura los datos según el formato esperado por el serializador
+                    const apiData = {
+                        // Datos de ubicación
+                        location: `${parseFloat(formData.latitud)},${parseFloat(formData.longitud)}`,
+            
+                        // Campos del formulario
+                        open_brood_frames: parseFloat(formData.cantidadCriasAbierta),
+                        capped_brood_frames: parseFloat(formData.cantidadCriasOperculada),
+                        queen_presence: formData.presenciaReina === 'Si' ? true : false,
+                        queen_color: formData.colorReina,
+                        origin: formData.origenReina,
+                        food_frames: parseFloat(formData.cuadrosComida),
+                        observations: formData.reportesGenerales,
+            
+                        // Datos del clima desde formData
+                        id_weather_conditions: {
+                            temp_c: formData.temperatura_c.toString(),
+                            temp_f: formData.temperatura_f.toString(),
+                            text: formData.clima_texto,
+                            wind_kph: formData.viento_kph.toString(),
+                            pressure_mb: formData.presion_mb.toString(),
+                            humidity_indices: formData.humedad.toString(),
+                        },
+            
+                // Campos adicionales
+                status: formData.estado || 'Active', 
+                beekeeper_id: parseInt(localStorage.getItem('id_User')) || null, 
             };
     
             const response = await fetch('http://localhost:8000/beehive/create-hive/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify(apiData)
+                body: JSON.stringify(apiData),
             });
     
             if (!response.ok) {
-                throw new Error('Error al guardar los datos');
+                const errorData = await response.json();
+                throw new Error(`Error al guardar los datos: ${JSON.stringify(errorData)}`);
             }
     
             const data = await response.json();
             console.log('Colmena creada exitosamente:', data);
-            
+    
             setShowPopup(true);
     
             // Limpiar el formulario manteniendo datos de clima y ubicación
-            setFormData(prev => ({
+            setFormData((prev) => ({
                 ...prev,
                 cantidadCriasAbierta: '',
                 cantidadCriasOperculada: '',
                 presenciaReina: '',
                 colorReina: '',
                 origenReina: '',
-                reportesGenerales: ''
+                reportesGenerales: '',
+                cuadrosComida: '',
             }));
     
         } catch (error) {
             console.error('Error al enviar datos:', error);
-            setError('Error al guardar los datos en el servidor');
+            setError(`Error al guardar los datos en el servidor: ${error.message}`);
         }
-    }
+    };
+      
             
     return (
         <Wrapper>
