@@ -22,7 +22,6 @@ function App() {
       <Routes>
         {/* Rutas accesibles para todos */}
         <Route path="/" element={<Login />} />
-        <Route path="/UserRegister" element={<UserRegister />} />
         <Route path="/RecuperarContraseña" element={<RecuperarContraseña />} />
         <Route path="/ConfirmPassword" element={<ConfirmPassword />} />
 
@@ -37,8 +36,8 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={["admin", "beekeeper"]} />}>
           <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/EditColmena/:colmenaId" element={<EditColmena />} />
-          <Route path="/Recoleccion" element={<Recoleccion />} />
-          <Route path="/Monitoreo" element={<Monitoreo />} />
+          <Route path="/Monitoreo/:colmenaId" element={<Monitoreo />} />
+          <Route path="/Recoleccion/:colmenaId" element={<Recoleccion />} />
           <Route path="/HivenRegister" element={<HivenRegister />} />
           <Route path="/List_Monitoreo" element={<List_Monitoreo />} />
           <Route path="/List_Recoleccion" element={<List_Recoleccion />} />

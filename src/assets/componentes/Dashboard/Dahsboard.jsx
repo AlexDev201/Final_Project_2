@@ -17,6 +17,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const [selectedColmenaId, setSelectedColmenaId] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
   // Imágenes cíclicas para asignar a las colmenas (si no hay campo de imagen en el modelo)
   const imagenes = [imagen1, imagen2, imagen3];
@@ -45,15 +46,13 @@ function Dashboard() {
   const handleSelectChange = (e, colmenaId) => {
     switch (e.target.value) {
       case 'editar':
-        case 'editar':
         navigate(`/EditColmena/${colmenaId}`); 
-    break;
         break;
       case 'monitoreo':
-        navigate('/Monitoreo');
+        navigate(`/Monitoreo/${colmenaId}`);
         break;
       case 'recoleccion':
-        navigate('/Recoleccion');
+        navigate(`/Recoleccion/${colmenaId}`);
         break;
       case 'visualizar-detalles':
         setSelectedColmenaId(null); // Primero resetea
@@ -72,6 +71,64 @@ function Dashboard() {
     setTimeout(() => {
       setSelectedColmenaId(null);
     }, 400);
+  };
+
+  // Función mejorada para cambiar el estado de la colmena
+  const handleChangeHiveState = async (colmenaId) => {
+    if (statusUpdating) return; // Evitar múltiples clics
+    
+    try {
+      setStatusUpdating(true);
+      const accessToken = localStorage.getItem('token');
+      
+      // Encontrar la colmena actual
+      const colmenaActual = data.find(c => c.id === colmenaId);
+      if (!colmenaActual) throw new Error('Colmena no encontrada');
+      
+      // Determinar el nuevo estado (inverso al actual)
+      const nuevoEstado = !colmenaActual.status;
+      
+      const response = await fetch(`http://127.0.0.1:8000/beehive/edit-state-hive/${colmenaId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          status: nuevoEstado ? 'Active' : 'Deactivate'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar el estado');
+      }
+      
+      const result = await response.json();
+      
+      // Actualizar el estado de datos local para reflejar el cambio
+      setData(prevData => 
+        prevData.map(colmena => 
+          colmena.id === colmenaId 
+            ? { ...colmena, status: nuevoEstado } 
+            : colmena
+        )
+      );
+      
+      // Actualizar la colmena seleccionada en el modal
+      if (selectedColmenaId === colmenaId) {
+        const colmenaSeleccionada = data.find(c => c.id === colmenaId);
+        setSelectedColmenaId(colmenaId);
+      }
+      
+      // Mostrar mensaje de éxito
+      alert(`Colmena ${nuevoEstado ? 'habilitada' : 'deshabilitada'} con éxito`);
+      
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setStatusUpdating(false);
+    }
   };
 
   // Renderizado
@@ -110,7 +167,12 @@ function Dashboard() {
                       </div>
                       <div className="col-12 col-sm-5 text-center text-sm-start mb-3 mb-sm-0">
                         <h3 className="mb-1 ms-0 ms-sm-3">Cod {colmena.id}</h3>
-                        <p className="mb-0 ms-0 ms-sm-3">{colmena.location}</p> {/* Usamos location como "finca" */}
+                        <p className="mb-0 ms-0 ms-sm-3">{colmena.location}</p>
+                        <p className="mb-0 ms-0 ms-sm-3">
+                          <span className={`badge ${colmena.status ? 'bg-success' : 'bg-danger'}`}>
+                            {colmena.status ? 'Activa' : 'Inactiva'}
+                          </span>
+                        </p>
                       </div>
                       <div className="col-12 col-sm-3 text-center">
                         <select 
@@ -188,11 +250,28 @@ function Dashboard() {
                               }}
                             />
                             <div className="d-flex flex-column gap-2 mt-3">
-                              <button className="btn btn-warning">Editar</button>
-                              <button className="btn btn-warning">Deshabilitar</button>
+                              <button 
+                                className="btn btn-warning" 
+                                onClick={() => navigate(`/EditColmena/${selectedColmena.id}`)}
+                              >
+                                Editar
+                              </button>
+                              <button 
+                                className={`btn ${selectedColmena.status ? 'btn-danger' : 'btn-success'}`}
+                                onClick={() => handleChangeHiveState(selectedColmena.id)}
+                                disabled={statusUpdating}
+                              >
+                                {statusUpdating ? (
+                                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                ) : null}
+                                {selectedColmena.status ? 'Deshabilitar' : 'Habilitar'}
+                              </button>
                             </div>
                           </div>
                           <div className="col-12 col-md-7">
+                            <p><strong>Estado:</strong> <span className={`badge ${selectedColmena.status ? 'bg-success' : 'bg-danger'}`}>
+                              {selectedColmena.status ? 'Activa' : 'Inactiva'}
+                            </span></p>
                             <p><strong>Cantidad cuadros cría abierta:</strong> {selectedColmena.open_brood_frames}</p>
                             <p><strong>Cantidad cuadros cría operculada:</strong> {selectedColmena.capped_brood_frames}</p>
                             <p><strong>Presencia reina:</strong> {selectedColmena.queen_presence ? 'Sí' : 'No'}</p>

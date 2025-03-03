@@ -1,5 +1,6 @@
 import Styled from 'styled-components';
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import NavBar from '../Single_Components/NavBar';
 import Aside_Card from '../Single_Components/Aside';
 import Footer from '../Single_Components/Footer';
@@ -85,7 +86,9 @@ const ErrorMessage = Styled.span`
 
 //
 function Recoleccion() {
-
+    const { colmenaId } = useParams(); // Obtener el ID de la colmena desde la URL
+    const beekeeper = localStorage.getItem("id_User")
+    const token = localStorage.getItem('token')
     const [formDataRecoleccion, setFormDataRecoleccion] = useState({
         fechaRecoleccion: '',
         produccionMiel: '',
@@ -198,22 +201,26 @@ function Recoleccion() {
         //Conexion al backend
 
         try{
-            const response = await fetch("http://127.0.0.1:8000/harvesting/hive-harvesting/",{
+            const response = await fetch(`http://127.0.0.1:8000/harvesting/hive-harvesting/${colmenaId}/`,{
                 method: "POST",
                 headers: {
-                    "Content-Type" : "application/json"
+                    "Content-Type" : "application/json",
+                    'Authorization': `Bearer ${token}`,
+
                 },
                 body: JSON.stringify({
                     harvest_date : formDataRecoleccion.fechaRecoleccion,
                     honey_production: formDataRecoleccion.produccionMiel, 
-                    pollen_production: formDataRecoleccion.produccionPolen
+                    pollen_production: formDataRecoleccion.produccionPolen,
+                    beekeeper : beekeeper,
+                    hive_id : colmenaId
                 })
             })
 
             const data = await response.json()
 
             if (response.ok){
-                console.log("Monitoreo exitoso")
+                console.log("Recoleccion exitosa")
             }else{
                 console.log("Datos incorrectos")
             }

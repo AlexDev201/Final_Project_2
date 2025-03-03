@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import Styled from 'styled-components';
 import { Eye, EyeOff } from 'lucide-react';
 import Admin_Nav_Bar from '../Single_Components/Admin_Nav_Bar';
@@ -27,7 +28,7 @@ const FormContainer = Styled.div`
     border: 1px solid grey;
     box-shadow: 0 0 20px 5px rgba(0, 0, 0, 0.25);
     height: 100%;
-    width: 100%
+    width: 100%;
     max-width: 495px;
 `;
 
@@ -77,6 +78,11 @@ const Input = Styled.input`
         outline: none;
         border-color: #ffb300;
     }
+
+    &:disabled {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
+    }
 `;
 
 const Select = Styled.select`
@@ -92,6 +98,21 @@ const Select = Styled.select`
         padding: 0.4rem;
         font-size: 0.8rem;
     }
+`;
+
+// Password input styling (agregado desde UserRegister)
+const PasswordInputWrapper = Styled.div`
+    position: relative;
+    width: 100%;
+`;
+
+const PasswordToggleIcon = Styled.div`
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #4e342e;
 `;
 
 const ButtonContainer = Styled.div`
@@ -124,7 +145,6 @@ const Button = Styled.button`
     }
 `;
 
-// PopUp styles (consistentes con los de UserRegister)
 const PopupOverlay = Styled.div`
     position: fixed;
     top: 0;
@@ -197,14 +217,15 @@ const PopupButton = Styled.button`
 `;
 
 function EditUser() {
-    // Variable para el reseteo del formulario
     const formRef = useRef(null);
     const [showPopup, setShowPopup] = useState(false);
     const [errors, setErrors] = useState({});
+    const location = useLocation();
+    const apicultorId = location.state?.id;
 
-    // Guardamos la información del formulario
     const [formDataUser, setFormDataUser] = useState({
-        nombreApicultor: '',
+        username: '',           // Inmutable, solo para mostrar
+        nombreApicultor: '',    // Editable, mapeado a first_name
         apellidoApicultor: '',
         identificacion: '',
         telefono: '',
@@ -215,27 +236,104 @@ function EditUser() {
         estado: 'Active'
     });
 
-    // Función de validación similar a UserRegister
+    // Estado para la visualización de contraseña (aunque no lo usamos en edición, pero mantiene consistencia con UserRegister)
+    const [showPassword, setShowPassword] = useState({
+        password: false
+    });
+
+    // Función para alternar la visibilidad de la contraseña
+    const togglePasswordVisibility = (field) => {
+        setShowPassword(prev => ({
+            ...prev,
+            [field]: !prev[field]
+        }));
+    };
+
+    useEffect(() => {
+        if (!apicultorId) return;
+
+        const fetchUserData = async () => {
+            const accessToken = localStorage.getItem('token');
+            if (!accessToken) {
+                alert('No se encontró el access token');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/beekeepers/edit-beekeeper/${apicultorId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al obtener datos del apicultor');
+                }
+
+                const data = await response.json();
+                setFormDataUser({
+                    username: data.username || '',
+                    nombreApicultor: data.first_name || '',
+                    apellidoApicultor: data.last_name || '',
+                    identificacion: data.identifications || '',
+                    telefono: data.phone || '',
+                    correo: data.email || '',
+                    fechaNacimiento: data.birth_date || '',
+                    nombreContactoEmergencia: data.emergency_contact_name || '',
+                    contactoEmergencia: data.emergency_contact_phone || '',
+                    estado: data.state === 'Activo' ? 'Active' : 'Deactivate',
+                });
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        };
+
+        fetchUserData();
+    }, [apicultorId]);
+
     const validateForm = (data) => {
         let errors = {};
         let isValid = true;
 
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Usando las mismas validaciones que en UserRegister para mantener consistencia
+        const cedulaRegex = /^[0-9]{8,10}$/;
+        if (data.identificacion && !cedulaRegex.test(data.identificacion)) {
+            errors.identificacion = "La cédula debe contener entre 8 y 10 dígitos numéricos";
+            isValid = false;
+        }
+
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (data.correo && !emailRegex.test(data.correo)) {
             errors.correo = "Formato de correo inválido";
             isValid = false;
         }
 
-        // Phone validation (simple check for numeric values)
-        if (data.telefono && !/^\d+$/.test(data.telefono)) {
-            errors.telefono = "El teléfono debe contener solo números";
+        const telefonoRegex = /^[0-9]{7,10}$/;
+        if (data.telefono && !telefonoRegex.test(data.telefono)) {
+            errors.telefono = "El teléfono debe contener entre 7 y 10 dígitos";
             isValid = false;
         }
 
-        // Emergency contact validation
-        if (data.contactoEmergencia && !/^\d+$/.test(data.contactoEmergencia)) {
-            errors.contactoEmergencia = "El contacto debe contener solo números";
+        if (data.contactoEmergencia && !telefonoRegex.test(data.contactoEmergencia)) {
+            errors.contactoEmergencia = "El contacto debe contener entre 7 y 10 dígitos";
+            isValid = false;
+        }
+
+        const nombreRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/;
+        if (data.nombreApicultor && !nombreRegex.test(data.nombreApicultor)) {
+            errors.nombreApicultor = "El nombre solo debe contener letras y espacios";
+            isValid = false;
+        }
+
+        if (data.apellidoApicultor && !nombreRegex.test(data.apellidoApicultor)) {
+            errors.apellidoApicultor = "El apellido solo debe contener letras y espacios";
+            isValid = false;
+        }
+
+        if (data.nombreContactoEmergencia && !nombreRegex.test(data.nombreContactoEmergencia)) {
+            errors.nombreContactoEmergencia = "El nombre solo debe contener letras y espacios";
             isValid = false;
         }
 
@@ -249,7 +347,6 @@ function EditUser() {
             [name]: value
         }));
 
-        // Clear errors when field is edited
         if (errors[name]) {
             setErrors(prev => ({
                 ...prev,
@@ -266,16 +363,14 @@ function EditUser() {
             return;
         }
 
-        // Validate form
         const validation = validateForm(formDataUser);
         if (!validation.isValid) {
             setErrors(validation.errors);
             return;
         }
 
-        // Crear el objeto de datos que espera el backend
         const userData = {
-            username: formDataUser.nombreApicultor,
+            first_name: formDataUser.nombreApicultor,
             last_name: formDataUser.apellidoApicultor,
             identifications: formDataUser.identificacion,
             email: formDataUser.correo,
@@ -283,37 +378,34 @@ function EditUser() {
             birth_date: formDataUser.fechaNacimiento,
             emergency_contact_name: formDataUser.nombreContactoEmergencia,
             emergency_contact_phone: formDataUser.contactoEmergencia,
-            state: formDataUser.estado,
-            assignment_date: new Date().toISOString().split('T')[0] // Fecha actual
+            state: formDataUser.estado === 'Active' ? 'Active' : 'Deactive',
+            assignment_date: new Date().toISOString().split('T')[0]
+            // No incluir username, ya que es inmutable
         };
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/beekeepers/edit-beekeeper/", {
-                method: "PUT",
+            const response = await fetch(`http://127.0.0.1:8000/beekeepers/edit-beekeeper/${apicultorId}/`, {
+                method: 'PATCH',
                 headers: {
-                    "Authorization": `Bearer ${accessToken}`,
-                    "Content-Type": "application/json"
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(userData)
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.Error || 'Error al actualizar');
+                console.log('Errores del backend:', errorData);
+                throw new Error(JSON.stringify(errorData) || 'Error al actualizar');
             }
 
-            const data = await response.json();
-            
-            // Si la actualización es exitosa
             setShowPopup(true);
-            
         } catch (error) {
             alert(`Error: ${error.message}`);
         }
     };
 
     const handleDisable = async () => {
-        // Lógica para deshabilitar apicultor
         try {
             const accessToken = localStorage.getItem('token');
             if (!accessToken) {
@@ -321,137 +413,154 @@ function EditUser() {
                 return;
             }
 
-            // Actualizar con estado inactivo
             const userData = {
-                username: formDataUser.nombreApicultor,
-                state: 'Inactive'
+                state: 'Deactivate' // Cambiar a Desactivo
             };
 
-            const response = await fetch("http://127.0.0.1:8000/beekeepers/update-status/", {
-                method: "PUT",
+            const response = await fetch(`http://127.0.0.1:8000/beekeepers/edit-beekeeper/${apicultorId}/`, {
+                method: 'PATCH',
                 headers: {
-                    "Authorization": `Bearer ${accessToken}`,
-                    "Content-Type": "application/json"
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(userData)
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.Error || 'Error al deshabilitar');
+                throw new Error(errorData.error || 'Error al deshabilitar');
             }
 
-            alert("Apicultor deshabilitado exitosamente");
-            
+            alert('Apicultor deshabilitado exitosamente');
         } catch (error) {
             alert(`Error: ${error.message}`);
         }
     };
-        
+
     return (
         <Wrapper>
             <Admin_Nav_Bar />
-            <div className='container py-4'>
+            <div className="container py-4">
                 <div className="row justify-content-center">
                     <div className="col-lg-6 col-md-12 mb-4">
                         <FormContainer>
                             <Title>Editar Apicultor</Title>
                             <Form onSubmit={handleSubmit} ref={formRef}>
+                                {/* Campo inmutable para username */}
+                                <Label htmlFor="username">Usuario</Label>
+                                <Input
+                                    type="text"
+                                    id="username"
+                                    value={formDataUser.username}
+                                    disabled
+                                />
+                                {/* Campo editable para nombre del apicultor */}
                                 <Label htmlFor="nombreApicultor">Nombre del apicultor</Label>
                                 <Input
-                                    type='text'
+                                    type="text"
                                     id="nombreApicultor"
-                                    name='nombreApicultor'
-                                    placeholder='Ingrese el nombre del apicultor'
+                                    name="nombreApicultor"
+                                    placeholder="Ingrese el nombre del apicultor"
                                     value={formDataUser.nombreApicultor}
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.nombreApicultor && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.nombreApicultor}</div>}
+                                {errors.nombreApicultor && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.nombreApicultor}</div>}
 
                                 <Label htmlFor="apellidoApicultor">Apellido del apicultor</Label>
                                 <Input
-                                    type='text'
+                                    type="text"
                                     id="apellidoApicultor"
-                                    name='apellidoApicultor'
-                                    placeholder='Ingrese el apellido del apicultor'
+                                    name="apellidoApicultor"
+                                    placeholder="Ingrese el apellido del apicultor"
                                     value={formDataUser.apellidoApicultor}
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.apellidoApicultor && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.apellidoApicultor}</div>}
-
+                                {errors.apellidoApicultor && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.apellidoApicultor}</div>}
 
                                 <Label htmlFor="identificacion">Identificación</Label>
                                 <Input
-                                    type='number'
+                                    type="number"
                                     id="identificacion"
-                                    name='identificacion'
-                                    placeholder='Ingrese la identificación del apicultor'
+                                    name="identificacion"
+                                    placeholder="Ingrese la identificación del apicultor"
                                     value={formDataUser.identificacion}
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.identificacion && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.identificacion}</div>}
-
+                                {errors.identificacion && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.identificacion}</div>}
 
                                 <Label htmlFor="correo">Correo</Label>
                                 <Input
-                                    type='email'
+                                    type="email"
                                     id="correo"
-                                    name='correo'
-                                    placeholder='Ingrese el correo del apicultor'
+                                    name="correo"
+                                    placeholder="Ingrese el correo del apicultor"
                                     value={formDataUser.correo}
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.correo && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.correo}</div>}
+                                {errors.correo && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.correo}</div>}
 
                                 <Label htmlFor="telefono">Teléfono</Label>
                                 <Input
-                                    type='tel'
+                                    type="tel"
                                     id="telefono"
-                                    name='telefono'
-                                    placeholder='Ingrese el número del apicultor'
+                                    name="telefono"
+                                    placeholder="Ingrese el número del apicultor"
                                     value={formDataUser.telefono}
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.telefono && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.telefono}</div>}
+                                {errors.telefono && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.telefono}</div>}
 
                                 <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
                                 <Input
-                                    type='date'
+                                    type="date"
                                     id="fechaNacimiento"
-                                    name='fechaNacimiento'
+                                    name="fechaNacimiento"
                                     value={formDataUser.fechaNacimiento}
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.fechaNacimiento && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.fechaNacimiento}</div>}
 
                                 <Label htmlFor="nombreContactoEmergencia">Nombre de contacto de emergencia</Label>
                                 <Input
-                                    type='text'
+                                    type="text"
                                     id="nombreContactoEmergencia"
-                                    placeholder='Ingrese el nombre del contacto de emergencia' 
-                                    name='nombreContactoEmergencia'
-                                    required
+                                    name="nombreContactoEmergencia"
+                                    placeholder="Ingrese el nombre del contacto de emergencia"
                                     value={formDataUser.nombreContactoEmergencia}
                                     onChange={handleChange}
+                                    required
                                 />
-                                {errors.nombreContactoEmergencia && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.nombreContactoEmergenciacontactoEmergencia}</div>}
+                                {errors.nombreContactoEmergencia && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.nombreContactoEmergencia}</div>}
 
                                 <Label htmlFor="contactoEmergencia">Contacto de emergencia</Label>
                                 <Input
-                                    type='tel'
+                                    type="tel"
                                     id="contactoEmergencia"
-                                    name='contactoEmergencia'
-                                    placeholder='Ingrese el contacto de emergencia' 
-                                    required
+                                    name="contactoEmergencia"
+                                    placeholder="Ingrese el contacto de emergencia"
                                     value={formDataUser.contactoEmergencia}
                                     onChange={handleChange}
+                                    required
                                 />
-                                {errors.contactoEmergencia && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.contactoEmergencia}</div>}
+                                {errors.contactoEmergencia && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.contactoEmergencia}</div>}
+
+                                <Label htmlFor="estado">Estado</Label>
+                                <Select
+                                    id="estado"
+                                    name="estado"
+                                    value={formDataUser.estado}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="Active">Activo</option>
+                                    <option value="Deactivate">Desactivado</option>
+                                </Select>
 
                                 <ButtonContainer>
                                     <Button type="submit">Actualizar</Button>
@@ -466,7 +575,6 @@ function EditUser() {
                 </div>
             </div>
             <Footer />
-
             <PopupOverlay isVisible={showPopup}>
                 <PopupContent isVisible={showPopup}>
                     <SuccessIcon />

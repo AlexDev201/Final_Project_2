@@ -6,7 +6,7 @@ import Aside_Card from '../Single_Components/Aside';
 import Footer from '../Single_Components/Footer';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Sistema de breakpoints (added from HivenRegister)
+// Sistema de breakpoints (mantenido igual)
 const breakpoints = {
     mobile: '480px',
     tablet: '768px',
@@ -20,56 +20,58 @@ const Wrapper = Styled.div`
     flex: 1;
 `;
 
+// Ajuste para hacer el FormContainer más compacto
 const FormContainer = Styled.div`
     background-color: white;
     border-radius: 10px;
-    padding: 1.5rem;
+    padding: 1.25rem; /* Reducido de 1.5rem */
     border: 1px solid grey;
     box-shadow: 0 0 20px 5px rgba(0, 0, 0, 0.25);
     height: 100%;
-    width: 100%
+    width: 100%;
     max-width: 495px;
 `;
 
 const Title = Styled.h1`
     margin: 0;
     color: rgb(0, 0, 0);
-    font-size: 1.8rem;
+    font-size: 1.7rem; /* Reducido ligeramente */
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.2rem; /* Reducido de 1.5rem */
 
     @media (max-width: ${breakpoints.mobile}) {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
+        font-size: 1.4rem;
+        margin-bottom: 0.8rem;
     }
 `;
 
+// Reducir el espaciado entre elementos del formulario
 const Form = Styled.form`
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem; /* Reducido de 0.75rem */
     width: 100%;
 `;
 
 const Label = Styled.label`
     font-weight: 500;
     color: rgb(10, 10, 10);
-    margin-bottom: 0.25rem;
-    font-size: 0.9rem;
+    margin-bottom: 0.15rem; /* Reducido de 0.25rem */
+    font-size: 0.85rem; /* Reducido de 0.9rem */
 `;
 
 const Input = Styled.input`
     width: 100%;
-    padding: 0.5rem;
+    padding: 0.4rem; /* Reducido de 0.5rem */
     border: 1px solid #ffcc80;
     border-radius: 6px;
     background-color: #fffde7;
     color: #4e342e;
-    font-size: 0.9rem;
+    font-size: 0.85rem; /* Reducido de 0.9rem */
     transition: border-color 0.3s;
 
     @media (max-width: ${breakpoints.mobile}) {
-        padding: 0.4rem;
+        padding: 0.35rem;
         font-size: 0.8rem;
     }
 
@@ -81,15 +83,16 @@ const Input = Styled.input`
 
 const Select = Styled.select`
     width: 100%;
-    margin: 0.5rem 0;
-    padding: 0.5rem;
+    margin: 0.3rem 0; /* Reducido de 0.5rem */
+    padding: 0.4rem; /* Reducido de 0.5rem */
     border: 1px solid #ffcc80;
     border-radius: 5px;
     font-family: 'Poppins', sans-serif;
     background-color: #fffde7;
+    font-size: 0.85rem; /* Añadido para consistencia */
 
     @media (max-width: ${breakpoints.mobile}) {
-        padding: 0.4rem;
+        padding: 0.35rem;
         font-size: 0.8rem;
     }
 `;
@@ -103,13 +106,13 @@ const ButtonContainer = Styled.div`
 const Button = Styled.button`
     background-color: #f9d77e;
     border: none;
-    padding: 0.5rem 1rem;
+    padding: 0.45rem 0.9rem; /* Reducido de 0.5rem 1rem */
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Reducido de 1rem */
     font-weight: bold;
     width: 150px;
-    margin-top: 1rem;
+    margin-top: 0.8rem; /* Reducido de 1rem */
     transition: background-color 0.3s;
     outline: none;
 
@@ -118,12 +121,20 @@ const Button = Styled.button`
     }
 
     @media (max-width: ${breakpoints.mobile}) {
-        font-size: 0.9rem;
-        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        padding: 0.35rem 0.7rem;
     }
 `;
 
-// Password input styling
+// Estilo compacto para los mensajes de error
+const ErrorMessage = Styled.div`
+    color: red;
+    font-size: 0.75rem; /* Más pequeño que 0.8rem */
+    margin-top: -0.2rem;
+    margin-bottom: 0.2rem;
+`;
+
+// Password input styling (mantenido igual)
 const PasswordInputWrapper = Styled.div`
     position: relative;
     width: 100%;
@@ -138,7 +149,7 @@ const PasswordToggleIcon = Styled.div`
     color: #4e342e;
 `;
 
-// Popup styles from HivenRegister
+// Estilos de popup (mantenidos igual)
 const PopupOverlay = Styled.div`
     position: fixed;
     top: 0;
@@ -264,7 +275,7 @@ function UserRegister() {
         }
     };
 
-  
+    // Validaciones mantenidas igual
     const validateForm = (data) => {
         let errors = {};
         let isValid = true;
@@ -329,11 +340,6 @@ function UserRegister() {
     
         return { isValid, errors };
     };
-
-
-
-
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -411,9 +417,9 @@ function UserRegister() {
     return (
         <Wrapper>
             <Admin_Nav_Bar />
-            <div className='container py-4'>
+            <div className='container py-3'> {/* Reducido de py-4 */}
                 <div className="row justify-content-center">
-                    <div className="col-lg-6 col-md-12 mb-4">
+                    <div className="col-lg-6 col-md-12 mb-3"> {/* Reducido de mb-4 */}
                         <FormContainer>
                             <Title>Crear Apicultor</Title>
                             <Form onSubmit={handleSubmit} ref={formRef}>
@@ -427,6 +433,7 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.username && <ErrorMessage>{errors.username}</ErrorMessage>}
                                 
                                 <Label htmlFor="nombreApicultor">Nombre del apicultor</Label>
                                 <Input
@@ -438,7 +445,7 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.nombreApicultor && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.nombreApicultor}</div>}
+                                {errors.nombreApicultor && <ErrorMessage>{errors.nombreApicultor}</ErrorMessage>}
 
                                 <Label htmlFor="apellidoApicultor">Apellido del apicultor</Label>
                                 <Input
@@ -450,7 +457,8 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.apellidoApicultor && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.apellidoApicultor}</div>}
+                                {errors.apellidoApicultor && <ErrorMessage>{errors.apellidoApicultor}</ErrorMessage>}
+                                
                                 <Label htmlFor="identificacion">Identificación</Label>
                                 <Input
                                     type='number'
@@ -461,7 +469,8 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.identificacion && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.identificacion}</div>}
+                                {errors.identificacion && <ErrorMessage>{errors.identificacion}</ErrorMessage>}
+                                
                                 <Label htmlFor="password">Contraseña</Label>
                                 <PasswordInputWrapper>
                                     <Input
@@ -474,9 +483,10 @@ function UserRegister() {
                                         required
                                     />
                                     <PasswordToggleIcon onClick={() => togglePasswordVisibility('password')}>
-                                        {showPassword.password ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        {showPassword.password ? <EyeOff size={18} /> : <Eye size={18} />} {/* Reducido size */}
                                     </PasswordToggleIcon>
                                 </PasswordInputWrapper>
+                                {errors.password && <ErrorMessage>{errors.password}</ErrorMessage>}
 
                                 <Label htmlFor="correo">Correo</Label>
                                 <Input
@@ -488,7 +498,7 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.correo && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.correo}</div>}
+                                {errors.correo && <ErrorMessage>{errors.correo}</ErrorMessage>}
 
                                 <Label htmlFor="telefono">Teléfono</Label>
                                 <Input
@@ -500,7 +510,7 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.telefono && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.telefono}</div>}
+                                {errors.telefono && <ErrorMessage>{errors.telefono}</ErrorMessage>}
 
                                 <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
                                 <Input
@@ -511,7 +521,7 @@ function UserRegister() {
                                     onChange={handleChange}
                                     required
                                 />
-                                {errors.fechaNacimiento && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.fechaNacimiento}</div>}
+                                {errors.fechaNacimiento && <ErrorMessage>{errors.fechaNacimiento}</ErrorMessage>}
 
                                 <Label htmlFor="estado">Estado</Label>
                                 <Select
@@ -535,7 +545,8 @@ function UserRegister() {
                                     value={formDataRegister.nombreContactoEmergencia}
                                     onChange={handleChange}
                                 />
-                                {errors.nombreContactoEmergencia && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.nombreContactoEmergencia}</div>}
+                                {errors.nombreContactoEmergencia && <ErrorMessage>{errors.nombreContactoEmergencia}</ErrorMessage>}
+                                
                                 <Label htmlFor="contactoEmergencia">Contacto de emergencia</Label>
                                 <Input
                                     type='tel'
@@ -546,7 +557,7 @@ function UserRegister() {
                                     value={formDataRegister.contactoEmergencia}
                                     onChange={handleChange}
                                 />
-                                {errors.contactoEmergencia && <div style={{color: 'red', fontSize: '0.8rem'}}>{errors.contactoEmergencia}</div>}
+                                {errors.contactoEmergencia && <ErrorMessage>{errors.contactoEmergencia}</ErrorMessage>}
 
                                 <Label htmlFor="rol">Rol</Label>
                                 <Select
@@ -567,7 +578,7 @@ function UserRegister() {
                         </FormContainer>
                     </div>
                     <div className="col-lg-6 col-md-12">
-                        <Aside_Card className="mb-4" />
+                        <Aside_Card className="mb-3" /> {/* Reducido de mb-4 */}
                     </div>
                 </div>
             </div>
