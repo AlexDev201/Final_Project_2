@@ -27,9 +27,9 @@ function App() {
 
         {/* Rutas solo para ADMINISTRADORES */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-          <Route path="/ViewApicultor" element={<ViewApicultor />} />
+          <Route path="/ViewApicultor" element={<ViewApicultor/>} />
           <Route path="/EditUser" element={<EditUser />} />
-          <Route path='/UserRegister' element= {<ViewApicultor />} />
+          <Route path='/UserRegister' element= {<UserRegister />} />
         </Route>
 
         {/* Rutas accesibles para ADMIN y APICULTOR */}

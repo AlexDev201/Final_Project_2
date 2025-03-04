@@ -254,7 +254,6 @@ function ViewApicultor() {
                       <p><strong>Teléfono de emergencia:</strong> {selectedApicultorId.emergency_contact_phone}</p>
                       <p><strong>Fecha de nacimiento:</strong> {selectedApicultorId.birth_date}</p>
                       <p><strong>Fecha de asignación:</strong> {selectedApicultorId.assignment_date}</p>
-                      <p><strong>Estado:</strong> {selectedApicultorId.state === 'Active' ? 'Activo' : 'Inactivo'}</p>
                     </div>
                   </div>
                 </>

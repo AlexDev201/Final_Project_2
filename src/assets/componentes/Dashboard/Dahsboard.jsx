@@ -54,6 +54,12 @@ function Dashboard() {
       case 'recoleccion':
         navigate(`/Recoleccion/${colmenaId}`);
         break;
+        case 'lista_monitoreo':
+          navigate('/List_Monitoreo');
+          break;
+        case 'lista_monitoreo':
+            navigate();
+        break;
       case 'visualizar-detalles':
         setSelectedColmenaId(null); // Primero resetea
         setTimeout(() => {
@@ -184,6 +190,9 @@ function Dashboard() {
                           <option value="recoleccion">Recolección</option>
                           <option value="monitoreo">Monitoreo</option>
                           <option value="visualizar-detalles">Visualizar Detalles</option>
+                          <option value="lista_monitoreo">Lista de monitoreos</option>
+                          <option value="lista_recoleccion">Lista de recolecciones</option>
+
                         </select>
                       </div>
                     </div>
