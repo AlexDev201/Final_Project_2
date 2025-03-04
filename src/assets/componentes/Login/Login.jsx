@@ -108,20 +108,22 @@ const ErrorMessage = styled.p`
 `;
 
 const Login = () => {
+    //Almacenamiento de datos
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    //Maneja los estilos de carga
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate()
     
 
     
-
+    //Manejo del login
     const handleLogin = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         setError("");
-
+        //Solicitud al backend
         try {
             const response = await fetch("http://localhost:8000/users/login/", {
                 method: "POST",

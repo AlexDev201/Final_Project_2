@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import NavBar from '../Single_Components/NavBar';
 import Aside_Card from '../Single_Components/Aside';
 import Footer from '../Single_Components/Footer';
-
+import 'bootstrap/dist/css/bootstrap.min.css';
 const breakpoints = {
     mobile: '480px',
     tablet: '768px',
@@ -18,10 +18,11 @@ const Wrapper = Styled.div`
     flex: 1;
 `;
 
+// Ajuste para hacer el FormContainer más compacto
 const FormContainer = Styled.div`
     background-color: white;
     border-radius: 10px;
-    padding: 1.5rem;
+    padding: 1.25rem; /* Reducido de 1.5rem */
     border: 1px solid grey;
     box-shadow: 0 0 20px 5px rgba(0, 0, 0, 0.25);
     height: 100%;
@@ -32,26 +33,32 @@ const FormContainer = Styled.div`
 const Form = Styled.form`
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem; /* Reducido de 0.75rem */
     width: 100%;
 `;
 
 const Label = Styled.label`
     font-weight: 500;
     color: rgb(10, 10, 10);
-    margin-bottom: 0.25rem;
-    font-size: 0.9rem;
+    margin-bottom: 0.15rem; /* Reducido de 0.25rem */
+    font-size: 0.85rem; /* Reducido de 0.9rem */
 `;
 
 const Input = Styled.input`
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.4rem; /* Reducido de 0.75rem */
     border: 1px solid #ffcc80;
-    border-radius: 10px;
+    border-radius: 6px; /* Reducido de 10px para consistencia */
     background-color: #fffde7;
     color: #4e342e;
-    font-size: 1rem;
+    font-size: 0.85rem; /* Reducido de 1rem */
     transition: border-color 0.3s;
+
+    @media (max-width: ${breakpoints.mobile}) {
+        padding: 0.35rem;
+        font-size: 0.8rem;
+    }
+
     &:focus {
         outline: none;
         border-color: #ffb300;
@@ -61,24 +68,31 @@ const Input = Styled.input`
 const Title = Styled.h1`
     margin: 0;
     color: rgb(0, 0, 0);
-    font-size: 1.8rem;
+    font-size: 1.7rem; /* Reducido de 1.8rem */
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.2rem; /* Reducido de 1.5rem */
+
     @media (max-width: ${breakpoints.mobile}) {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
+        font-size: 1.4rem;
+        margin-bottom: 0.8rem;
     }
 `;
 
 const Select = Styled.select`
     width: 100%;
-    padding: 0.75rem;
+    margin: 0.3rem 0; /* Añadido para consistencia, reducido de 0.5rem implícito */
+    padding: 0.4rem; /* Reducido de 0.75rem */
     border: 1px solid #ffcc80;
-    border-radius: 10px;
+    border-radius: 5px; /* Reducido de 10px para consistencia */
     background-color: #fffde7;
     color: #4e342e;
-    font-size: 1rem;
+    font-size: 0.85rem; /* Reducido de 1rem */
     font-family: 'Poppins', sans-serif;
+
+    @media (max-width: ${breakpoints.mobile}) {
+        padding: 0.35rem;
+        font-size: 0.8rem;
+    }
 `;
 
 const ButtonContainer = Styled.div`
@@ -90,17 +104,32 @@ const ButtonContainer = Styled.div`
 const Button = Styled.button`
     background-color: #f9d77e;
     border: none;
-    padding: 0.8rem;
-    border-radius: 10px;
+    padding: 0.45rem 0.9rem; /* Reducido de 0.8rem */
+    border-radius: 5px; /* Reducido de 10px para consistencia */
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Reducido de 1rem */
     font-weight: 600;
     color: #4e342e;
     width: 150px;
     transition: background-color 0.3s;
+    margin-top: 0.8rem; /* Añadido para consistencia, reducido de 1rem implícito */
+
     &:hover {
         background-color: #f8c150;
     }
+
+    @media (max-width: ${breakpoints.mobile}) {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.7rem;
+    }
+`;
+
+// Estilo compacto para los mensajes de error
+const ErrorMessage = Styled.div`
+    color: red;
+    font-size: 0.75rem; /* Más pequeño que 0.8rem */
+    margin-top: -0.2rem;
+    margin-bottom: 0.2rem;
 `;
 
 const PopupOverlay = Styled.div`
@@ -122,9 +151,14 @@ const PopupContent = Styled.div`
     border-radius: 10px;
     text-align: center;
     position: relative;
-    width: 400px;
+    width: 90%; /* Ajustado para consistencia */
+    max-width: 400px; /* Añadido para consistencia */
     transform: ${props => props.isVisible ? 'scale(1)' : 'scale(0.1)'};
     transition: transform 0.4s ease-in-out;
+
+    @media (max-width: ${breakpoints.mobile}) {
+        padding: 1.5rem;
+    }
 `;
 
 const SuccessIcon = Styled.div`
@@ -147,6 +181,10 @@ const PopupTitle = Styled.h2`
     color: #333;
     font-size: 24px;
     margin-bottom: 10px;
+
+    @media (max-width: ${breakpoints.mobile}) {
+        font-size: 20px;
+    }
 `;
 
 const PopupButton = Styled.button`
@@ -164,7 +202,7 @@ const PopupButton = Styled.button`
 `;
 
 function EditColmena() {
-    const { colmenaId } = useParams(); // Obtener el ID de la colmena desde la URL
+    const { colmenaId } = useParams();
     const navigate = useNavigate();
     const [showPopup, setShowPopup] = useState(false);
     const [errors, setErrors] = useState({});
@@ -179,7 +217,6 @@ function EditColmena() {
     });
     const [loading, setLoading] = useState(true);
 
-    // Cargar datos iniciales de la colmena
     useEffect(() => {
         if (!colmenaId) {
             console.error('No colmenaId provided');
@@ -192,7 +229,6 @@ function EditColmena() {
                 const token = localStorage.getItem('token');
                 if (!token) throw new Error('No token found');
 
-                // Usamos list-hives y filtramos; idealmente, crea un endpoint /detail/<pk>/
                 const response = await fetch(`http://127.0.0.1:8000/beehive/list-hives/`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -341,12 +377,12 @@ function EditColmena() {
     return (
         <Wrapper>
             <NavBar />
-            <div className='container py-4'>
+            <div className='container py-3'> {/* Reducido de py-4 */}
                 <div className="row justify-content-center">
-                    <div className="col-lg-6 col-md-12 mb-4">
+                    <div className="col-lg-6 col-md-12 mb-3"> {/* Reducido de mb-4 */}
                         <FormContainer>
+                            <Title>Editar Colmena</Title>
                             <Form onSubmit={handleSubmit}>
-                                <Title>Editar Colmena</Title>
                                 <Label>Cantidad de Cuadros de Cría Abierta</Label>
                                 <Input
                                     type='number'
@@ -355,7 +391,7 @@ function EditColmena() {
                                     value={formData.cantidadCriasAbierta}
                                     onChange={handleChange}
                                 />
-                                {errors.cantidadCriasAbierta && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.cantidadCriasAbierta}</div>}
+                                {errors.cantidadCriasAbierta && <ErrorMessage>{errors.cantidadCriasAbierta}</ErrorMessage>}
 
                                 <Label>Cantidad de Cuadros de Cría Operculada</Label>
                                 <Input
@@ -365,7 +401,7 @@ function EditColmena() {
                                     value={formData.cantidadCriasOperculada}
                                     onChange={handleChange}
                                 />
-                                {errors.cantidadCriasOperculada && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.cantidadCriasOperculada}</div>}
+                                {errors.cantidadCriasOperculada && <ErrorMessage>{errors.cantidadCriasOperculada}</ErrorMessage>}
 
                                 <Label>Cuadros de Comida</Label>
                                 <Input
@@ -375,7 +411,7 @@ function EditColmena() {
                                     value={formData.cuadrosComida}
                                     onChange={handleChange}
                                 />
-                                {errors.cuadrosComida && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.cuadrosComida}</div>}
+                                {errors.cuadrosComida && <ErrorMessage>{errors.cuadrosComida}</ErrorMessage>}
 
                                 <Label>Presencia de la Reina</Label>
                                 <Select
@@ -422,7 +458,7 @@ function EditColmena() {
                                     value={formData.reportesGenerales}
                                     onChange={handleChange}
                                 />
-                                {errors.reportesGenerales && <div style={{ color: 'red', fontSize: '0.8rem' }}>{errors.reportesGenerales}</div>}
+                                {errors.reportesGenerales && <ErrorMessage>{errors.reportesGenerales}</ErrorMessage>}
 
                                 <ButtonContainer>
                                     <Button type="submit">Actualizar</Button>

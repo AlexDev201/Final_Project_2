@@ -57,8 +57,8 @@ function Dashboard() {
         case 'lista_monitoreo':
           navigate('/List_Monitoreo');
           break;
-        case 'lista_monitoreo':
-            navigate();
+        case 'lista_recoleccion':
+            navigate('/List_Recoleccion');
         break;
       case 'visualizar-detalles':
         setSelectedColmenaId(null); // Primero resetea

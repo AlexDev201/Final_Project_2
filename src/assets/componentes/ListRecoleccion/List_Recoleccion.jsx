@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams} from 'react-router-dom';
 import styled from 'styled-components';
 import NavBar from '../Single_Components/NavBar';
 import Footer from '../Single_Components/Footer';
@@ -381,47 +381,107 @@ const PopupButton = styled.button`
 
 const List_Recoleccion = () => {
   const navigate = useNavigate();
+  const { colmenaId } = useParams(); // Obtenemos el ID de la colmena de la URL
+  const [recolecciones, setRecolecciones] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedRecoleccionDate, setSelectedRecoleccionDate] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [beekeeperInfo, setBeekeeperInfo] = useState(null);
+  const [colmenasRelacionadas, setColmenasRelacionadas] = useState([]);
+  const token = localStorage.getItem('token')
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Primero obtenemos todas las recolecciones
+        const response = await fetch('http://127.0.0.1:8000/harvesting/list-hive-harvesting/',{
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : '',
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Error en la respuesta del servidor');
+        }
+        const result = await response.json();
+        
+        // Filtramos las recolecciones por la colmena específica
+        if (colmenaId) {
+          const recoleccionesFiltradas = result.filter(
+            recoleccion => recoleccion.hive_id.toString() === colmenaId
+          );
+          setRecolecciones(recoleccionesFiltradas);
+          
+          // Si hay recolecciones, podemos obtener info del apicultor de la primera
+          if (recoleccionesFiltradas.length > 0) {
+            const beekeeperId = recoleccionesFiltradas[0].beekeeper;
+            await fetchBeekeeperInfo(beekeeperId);
+            await fetchRelatedHives(beekeeperId);
+          }
+        } else {
+          // Si no hay colmenaId, mostramos todas las recolecciones
+          setRecolecciones(result);
+        }
+      } catch (error) {
+        console.error("Error al cargar datos:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const recoleccionInicial = [
-    { fechaRecoleccion: '2025-02-01' },
-    { fechaRecoleccion: '2025-02-07' },
-    { fechaRecoleccion: '2025-02-06' }
-  ];
+    // Función para obtener información del apicultor
+    const fetchBeekeeperInfo = async (beekeeperId) => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/beekeepers/${beekeeperId}/`);
+        if (!response.ok) {
+          throw new Error('Error al obtener información del apicultor');
+        }
+        const data = await response.json();
+        setBeekeeperInfo(data);
+      } catch (error) {
+        console.error("Error al cargar datos del apicultor:", error);
+      }
+    };
 
-  const recoleccionCompleta = [
-    {
-      fechaRecoleccion: '2025-02-01',
-      produccionMiel: '45gr',
-      produccionPolen: '23gr'
-    },
-    {
-      fechaRecoleccion: '2025-02-07',
-      produccionMiel: '34gr',
-      produccionPolen: '32gr'
-    },
-    {
-      fechaRecoleccion: '2025-02-06',
-      produccionMiel: '43gr',
-      produccionPolen: '42gr'
-    }
-  ];
+    // Función para obtener colmenas relacionadas con el apicultor
+    const fetchRelatedHives = async (beekeeperId) => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/hives/beekeeper/${beekeeperId}/`);
+        if (!response.ok) {
+          throw new Error('Error al obtener colmenas relacionadas');
+        }
+        const data = await response.json();
+        setColmenasRelacionadas(data);
+      } catch (error) {
+        console.error("Error al cargar colmenas relacionadas:", error);
+      }
+    };
 
-  const handleSelectChange = (e, fecha) => {
+    fetchData();
+  }, [colmenaId]);
+
+  const handleSelectChange = (e, recoleccion) => {
     switch(e.target.value) {
       case 'editar':
-        navigate('/EditarRecoleccion');
+        navigate(`/EditarRecoleccion/${recoleccion.id}`);
         break;
       case 'visualizar-detalles':
         setSelectedRecoleccionDate(null);
         setTimeout(() => {
-          setSelectedRecoleccionDate(fecha);
+          setSelectedRecoleccionDate(recoleccion);
           setShowPopup(true);
         }, 10);
         break;
       default:
         break;
+    }
+  };
+
+  const handleColmenaSelect = (e) => {
+    if (e.target.value) {
+      navigate(`/recolecciones/colmena/${e.target.value}`);
     }
   };
 
@@ -432,25 +492,8 @@ const List_Recoleccion = () => {
     }, 400);
   };
 
-  //Conexion al backend 
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:8000/harvesting/list-hive-harvesting/');
-        if (!response.ok) {
-          throw new Error('Error en la respuesta del servidor');
-        }
-        const result = await response.json();
-        setData(result);
-      } catch (error) {
-        setError(error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
+  if (loading) return <div>Cargando recolecciones...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <PageWrapper>
@@ -458,79 +501,80 @@ const List_Recoleccion = () => {
         <NavBar />
         <Container>
           <Main>
-            {recoleccionInicial.map((recoleccion) => (
-              <Section key={recoleccion.fechaRecoleccion}>
-                <Img 
-                  src={imagen2}
-                  alt={`Recolección del ${recoleccion.fechaRecoleccion}`} 
-                />
-                <DivSection>
-                  <h3>Fecha: {new Date(recoleccion.fechaRecoleccion).toLocaleDateString()}</h3>
-                </DivSection>
-                <Select onChange={(e) => handleSelectChange(e, recoleccion.fechaRecoleccion)}>
-                  <option value="">Seleccionar</option>
-                  <option value="editar">Editar</option>
-                  <option value="visualizar-detalles">Visualizar Detalles</option>
-                </Select>
-              </Section>
-            ))}
+            {recolecciones.length > 0 ? (
+              recolecciones.map((recoleccion) => (
+                <Section key={recoleccion.id}>
+                  <Img 
+                    src={imagen2}
+                    alt={`Recolección del ${new Date(recoleccion.harvest_date).toLocaleDateString()}`} 
+                  />
+                  <DivSection>
+                    <h3>Fecha: {new Date(recoleccion.harvest_date).toLocaleDateString()}</h3>
+                    <p>Producción de Miel: {recoleccion.honey_production} gr</p>
+                    <p>Producción de Polen: {recoleccion.pollen_production} gr</p>
+                  </DivSection>
+                  <Select onChange={(e) => handleSelectChange(e, recoleccion)}>
+                    <option value="">Seleccionar</option>
+                    <option value="editar">Editar</option>
+                    <option value="visualizar-detalles">Visualizar Detalles</option>
+                  </Select>
+                </Section>
+              ))
+            ) : (
+              <div>No hay recolecciones para esta colmena</div>
+            )}
           </Main>
 
           <Aside>
-          <h2>Apicultor</h2>
+            <h2>Apicultor</h2>
             <ProfileImage src="src/img/profile-pic.jpeg" alt="Perfil" />
-            <h3>Giovanny Molina</h3>
-            <Select>
+            <h3>{beekeeperInfo ? beekeeperInfo.name : "Cargando..."}</h3>
+            <Select onChange={handleColmenaSelect}>
               <option value="">Colmenas Relacionadas</option>
+              {colmenasRelacionadas.map(colmena => (
+                <option key={colmena.id} value={colmena.id}>
+                  Colmena #{colmena.id} - {colmena.name || "Sin nombre"}
+                </option>
+              ))}
             </Select>
           </Aside>
         </Container>
-
-        
 
         <PopupOverlay isVisible={showPopup}>
           <PopupContent isVisible={showPopup}>
             <CloseIcon onClick={closePopup} />
             <Logo src="src/img/Colmenares_del_eje_logo.png" alt="Logo" />
             {selectedRecoleccionDate && (
-              (() => {
-                const selectedRecoleccion = recoleccionCompleta.find(
-                  r => r.fechaRecoleccion === selectedRecoleccionDate
-                );
-                if (selectedRecoleccion) {
-                  return (
-                    <>
-                      <PopupTitle>Información de la Recolección</PopupTitle>
-                      <PopupBody>
-                        <PopupImageSection>
-                          <img 
-                            src= {imagen2}
-                            alt="Imagen recolección"
-                            style={{
-                              width: '150px',
-                              height: '150px',
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                              border: '3px solid gray'
-                            }}
-                          />
-                        </PopupImageSection>
-                        <PopupInfoSection>
-                          <p><strong>Fecha:</strong> {new Date(selectedRecoleccion.fechaRecoleccion).toLocaleDateString()}</p>
-                          <p><strong>Producción de Miel:</strong> {selectedRecoleccion.produccionMiel}</p>
-                          <p><strong>Producción de Polen:</strong> {selectedRecoleccion.produccionPolen}</p>
-                        </PopupInfoSection>
-                      </PopupBody>
-                      <PopupButtonsContainer>
-                        <PopupButton>Editar</PopupButton>
-                        <PopupButton>Eliminar</PopupButton>
-                      </PopupButtonsContainer>
-                    </>
-                  );
-                } else {
-                  return <p>No se encontró información detallada para esta recolección.</p>;
-                }
-              })()
+              <>
+                <PopupTitle>Información de la Recolección</PopupTitle>
+                <PopupBody>
+                  <PopupImageSection>
+                    <img 
+                      src={imagen2}
+                      alt="Imagen recolección"
+                      style={{
+                        width: '150px',
+                        height: '150px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '3px solid gray'
+                      }}
+                    />
+                  </PopupImageSection>
+                  <PopupInfoSection>
+                    <p><strong>Fecha:</strong> {new Date(selectedRecoleccionDate.harvest_date).toLocaleDateString()}</p>
+                    <p><strong>Producción de Miel:</strong> {selectedRecoleccionDate.honey_production} gr</p>
+                    <p><strong>Producción de Polen:</strong> {selectedRecoleccionDate.pollen_production} gr</p>
+                    <p><strong>ID de Colmena:</strong> {selectedRecoleccionDate.hive_id}</p>
+                  </PopupInfoSection>
+                </PopupBody>
+                <PopupButtonsContainer>
+                  <PopupButton onClick={() => navigate(`/EditarRecoleccion/${selectedRecoleccionDate.id}`)}>
+                    Editar
+                  </PopupButton>
+                  <PopupButton>Eliminar</PopupButton>
+                </PopupButtonsContainer>
+              </>
             )}
           </PopupContent>
         </PopupOverlay>

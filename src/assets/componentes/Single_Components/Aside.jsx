@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Button, Card, Image } from "react-bootstrap";
 import { PersonStandingIcon } from "lucide-react";
 
